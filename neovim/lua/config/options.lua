@@ -1,19 +1,22 @@
 -- Set a variable for reuse it
 local optset = vim.opt
 
--- Continue to the setup from now
-optset.expandtab = true
-optset.autoindent = true
-optset.shiftwidth = 4
-optset.tabstop = 4
-optset.softtabstop = 4
-
-optset.smartindent = true
-
-optset.wrap = true
-
+-- Line numbers: absolute on current line, relative on others
 optset.number = true
 optset.relativenumber = true
+
+-- Tabs: 4 spaces, expand to spaces
+optset.expandtab = true
+optset.tabstop = 4
+optset.shiftwidth = 4
+optset.softtabstop = 4
+
+-- autoindent: new line copies the indent of the current line.
+-- smartindent is off — treesitter's indentexpr handles block-aware indenting.
+optset.autoindent = true
+optset.smartindent = false
+
+optset.wrap = true
 
 optset.wildmode = "longest:full,full" -- complete the longest common match, and allow tabbing the results to fully complete them
 optset.completeopt = "menuone,longest,preview"

@@ -1,8 +1,8 @@
 return {
-  "m4xshen/hardtime.nvim",
-  enabled = true,
-  opts = {
-    disable_mouse = false,
-    restriction_mode = "block", -- block bad keys instead of just warning
-  },
+    "m4xshen/hardtime.nvim",
+    enabled = true,
+    opts = {
+        disable_mouse = false,
+        restriction_mode = "block", -- block bad keys instead of just warning
+    },
 }
