@@ -45,7 +45,26 @@ return {
                 },
             },
             ts_ls = {},
-            pyright = {},
+            pyright = {
+                before_init = function(params, config)
+                    local venv = (params.rootPath or vim.fn.getcwd()) .. "/.venv"
+                    if vim.fn.isdirectory(venv) == 1 then
+                        config.settings = config.settings or {}
+                        config.settings.python = config.settings.python or {}
+                        config.settings.python.pythonPath = venv .. "/bin/python"
+                    end
+                end,
+                settings = {
+                    python = {
+                        venvPath = ".",
+                        venv = ".venv",
+                        analysis = {
+                            autoSearchPaths = true,
+                            useLibraryCodeForTypes = true,
+                        },
+                    },
+                },
+            },
             gopls = {},
             rust_analyzer = {},
             clangd = {
