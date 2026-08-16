@@ -76,11 +76,13 @@ readonly DOTFILES_DIR
 
 readonly NVIM_SRC="$DOTFILES_DIR/neovim"
 readonly KITTY_SRC="$DOTFILES_DIR/kitty"
+readonly HYPR_SRC="$DOTFILES_DIR/hypr"
 readonly SCRIPTS_SRC="$DOTFILES_DIR/scripts"
 readonly ZSH_SRC="$SCRIPTS_SRC/zshrc"
 
 readonly NVIM_DEST="$HOME/.config/nvim"
 readonly KITTY_DEST="$HOME/.config/kitty"
+readonly HYPR_DEST="$HOME/.config/hypr"
 readonly ZSH_DEST="$HOME/.zshrc"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -471,6 +473,55 @@ create_symlinks() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Hyprland Transparency (hypr/transparency.lua)
+#
+# Unlike the plain symlinks above, this file gets copied (not linked) and has
+# its FLEURY_BLUR flag stamped in at install time, so it's safe to tweak per
+# machine without editing the repo. Only runs if the user already has a Lua
+# Hyprland config (~/.config/hypr/hyprland.lua) — i.e. Omarchy/Hyprland 0.55+.
+# ─────────────────────────────────────────────────────────────────────────────
+install_hypr_transparency() {
+    log_step "Configuring Hyprland Transparency"
+
+    local hyprland_lua="$HYPR_DEST/hyprland.lua"
+    if [[ ! -f "$hyprland_lua" ]]; then
+        log_warning "$hyprland_lua not found; skipping Hyprland transparency setup"
+        return 0
+    fi
+
+    local blur_enabled="false"
+    if [[ -n "${HYPR_BLUR:-}" ]]; then
+        blur_enabled="$HYPR_BLUR"
+    elif confirm "Enable frosted-glass blur behind transparent windows? (No = fully clear, no blur)"; then
+        blur_enabled="true"
+    fi
+
+    local dest="$HYPR_DEST/transparency.lua"
+    if [[ -e "$dest" || -L "$dest" ]]; then
+        local backup="${dest}.backup.$(date +%Y%m%d_%H%M%S)"
+        log_warning "Backing up existing $dest -> $backup"
+        run_cmd mv "$dest" "$backup"
+    fi
+
+    log_info "Writing $dest (blur: $blur_enabled)"
+    sed "s/^local FLEURY_BLUR = .*/local FLEURY_BLUR = ${blur_enabled} -- set by setup.sh/" \
+        "$HYPR_SRC/transparency.lua" >"$dest"
+    log_success "Hyprland transparency config installed"
+
+    if grep -qF 'require("hypr.transparency")' "$hyprland_lua"; then
+        log_success "hyprland.lua already loads transparency.lua"
+        return 0
+    fi
+
+    local hypr_backup="${hyprland_lua}.backup.$(date +%Y%m%d_%H%M%S)"
+    log_warning "Backing up existing $hyprland_lua -> $hypr_backup"
+    run_cmd cp "$hyprland_lua" "$hypr_backup"
+
+    printf '\nrequire("hypr.transparency")\n' >>"$hyprland_lua"
+    log_success 'Added require("hypr.transparency") to hyprland.lua'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Set Zsh as Default Shell  +  switch the current session into zsh
 # ─────────────────────────────────────────────────────────────────────────────
 set_default_shell() {
@@ -570,6 +621,10 @@ print_success_message() {
     echo -e "    - ~/.config/kitty   -> Kitty config"
     echo -e "    - ~/.zshrc          -> Zsh config"
     echo ""
+    echo -e "  ${CYAN}Hyprland transparency:${NC}"
+    echo -e "    - ~/.config/hypr/transparency.lua installed (skipped if no hyprland.lua found)"
+    echo -e "    - require(\"hypr.transparency\") added to ~/.config/hypr/hyprland.lua"
+    echo ""
     echo -e "  ${YELLOW}Note:${NC} any pre-existing configs were backed up next to the"
     echo -e "        originals as *.backup.<timestamp> — remove them once happy."
     echo ""
@@ -622,6 +677,7 @@ main() {
     install_nerd_fonts
     install_nvm
     create_symlinks
+    install_hypr_transparency
     set_default_shell
 
     print_success_message

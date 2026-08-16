@@ -1,6 +1,6 @@
 # omarchy-dotfiles
 
-Personal development environment built on top of [Omarchy](https://omarchy.org) — an opinionated Arch Linux setup. Covers Neovim, Kitty, and Zsh with a single automated installer that works across Linux distros and macOS.
+Personal development environment built on top of [Omarchy](https://omarchy.org) — an opinionated Arch Linux setup. Covers Neovim, Kitty, Hyprland transparency, and Zsh with a single automated installer that works across Linux distros and macOS.
 
 ## What's inside
 
@@ -8,6 +8,7 @@ Personal development environment built on top of [Omarchy](https://omarchy.org) 
 |--------|----------|-------------|
 | Neovim | `neovim/` | Full IDE setup via lazy.nvim |
 | Kitty | `kitty/` | GPU-accelerated terminal with Catppuccin Mocha |
+| Hyprland | `hypr/transparency.lua` | Window/layer opacity + blur rules for Hyprland (Lua config) |
 | Zsh | `scripts/zshrc` | Oh-My-Zsh shell with modern CLI replacements |
 
 ## Quick start
@@ -48,6 +49,27 @@ Do **not** run as root. The script escalates with `sudo` only where needed.
 ~/.config/kitty  →  kitty/
 ~/.zshrc         →  scripts/zshrc
 ```
+
+## Hyprland transparency
+
+`hypr/transparency.lua` sets window opacity, blur, and layer rules for
+Hyprland. It requires the **Lua** Hyprland config (`~/.config/hypr/hyprland.lua`,
+Hyprland 0.55+/Omarchy) — if that file isn't found, setup skips this step
+entirely, nothing else is affected.
+
+Unlike the plain symlinks above, this file is **copied**, not linked, because
+its `FLEURY_BLUR` flag gets stamped in per machine at install time:
+
+- Interactively, setup asks whether to enable frosted-glass blur (recommended)
+  or fully clear/no blur.
+- Non-interactively, set `HYPR_BLUR=true` or `HYPR_BLUR=false` before running
+  `./setup.sh` to skip the prompt.
+
+Setup also appends `require("hypr.transparency")` to your
+`~/.config/hypr/hyprland.lua` if it isn't already there (backing up the file
+first). Re-running `./setup.sh` is idempotent — it won't duplicate the
+`require` line, and any previous `transparency.lua` is backed up before being
+overwritten.
 
 ## Neovim plugins
 
