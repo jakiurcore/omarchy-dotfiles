@@ -1,3 +1,4 @@
+require("config.remote_clipboard").setup()
 -- Set a variable for reuse it
 local optset = vim.opt
 
