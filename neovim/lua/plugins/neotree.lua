@@ -54,5 +54,20 @@ return {
         vim.keymap.set("n", "<leader>e", ":Neotree toggle left<CR>", {
             desc = "Toggle File Explorer",
         })
+
+        -- Neo-tree's own close_if_last_window WinClosed autocmd (plugin/neo-tree.lua)
+        -- reads vim.b[buf].neo_tree_source and passes it straight into
+        -- sources.manager.get_state(), which asserts it's non-nil. That buffer var
+        -- can be unset on a neo-tree buffer when some other plugin's nui.nvim popup
+        -- (e.g. noice.nvim) closes and fires this "*" autocmd, crashing it. Guard
+        -- here instead of patching the vendored file, which `:Lazy update` wipes.
+        local manager = require("neo-tree.sources.manager")
+        local get_state = manager.get_state
+        manager.get_state = function(source_name, ...)
+            if not source_name then
+                return nil
+            end
+            return get_state(source_name, ...)
+        end
     end,
 }

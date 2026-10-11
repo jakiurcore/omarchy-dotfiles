@@ -17,12 +17,19 @@ return {
             "php",
             "python",
             "rust",
+            "c",
             "cpp",
+            "make",
             "go",
             "yaml",
             "toml",
             "dockerfile",
             "regex",
+            "java",
+            "kotlin",
+            "dart",
+            "groovy",
+            "xml",
         }
         local installed = require("nvim-treesitter.config").get_installed()
         local missing = vim.tbl_filter(function(p)

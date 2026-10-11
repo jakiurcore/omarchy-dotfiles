@@ -36,3 +36,11 @@ map("n", "<C-j>", ":m .+1<CR>==")
 map("n", "<C-k>", ":m .-2<CR>==")
 map("v", "<C-j>", ":m '>+1<CR>gv=gv")
 map("v", "<C-k>", ":m '<-2<CR>gv=gv")
+
+-- Window/split management (navigation + resizing live in smart-splits.nvim,
+-- bound to <A-hjkl>/<A-arrows> since <C-j>/<C-k> above are already taken)
+map("n", "<leader>sv", "<cmd>vsplit<CR>", { desc = "Split vertically" })
+map("n", "<leader>ss", "<cmd>split<CR>", { desc = "Split horizontally" })
+map("n", "<leader>sc", "<cmd>close<CR>", { desc = "Close split" })
+map("n", "<leader>so", "<cmd>only<CR>", { desc = "Close other splits" })
+map("n", "<leader>s=", "<C-w>=", { desc = "Equalize split sizes" })

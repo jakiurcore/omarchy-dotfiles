@@ -173,6 +173,75 @@ install_core_deps() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Install C/C++ Toolchain (for Neovim's clangd/jdtls-style C/C++ support)
+# ─────────────────────────────────────────────────────────────────────────────
+install_cpp_toolchain() {
+    log_step "Installing C/C++ Toolchain"
+
+    # gcc + g++ (make usually ships alongside on Linux's base toolchain package)
+    if command_exists gcc && command_exists g++; then
+        log_success "gcc/g++ already installed"
+    else
+        log_info "Installing gcc/g++..."
+        case "$PACKAGE_MANAGER" in
+        pacman) sudo pacman -S --noconfirm --needed gcc make ;;
+        apt) sudo apt-get install -y build-essential ;;
+        dnf) sudo dnf install -y gcc gcc-c++ make ;;
+        zypper) sudo zypper install -y gcc gcc-c++ make ;;
+        brew) log_warning "clang/make come from Xcode Command Line Tools; run 'xcode-select --install' if missing" ;;
+        esac
+    fi
+
+    # make on its own, in case the branch above didn't cover it
+    if command_exists make; then
+        log_success "make already installed"
+    else
+        log_info "Installing make..."
+        case "$PACKAGE_MANAGER" in
+        pacman) sudo pacman -S --noconfirm --needed make ;;
+        apt) sudo apt-get install -y make ;;
+        dnf) sudo dnf install -y make ;;
+        zypper) sudo zypper install -y make ;;
+        brew) brew install make ;;
+        esac
+    fi
+
+    # gdb (classic debugger; nvim-dap's codelldb covers in-editor debugging,
+    # this is for anyone who wants the command-line tool too)
+    if command_exists gdb; then
+        log_success "gdb already installed"
+    else
+        log_info "Installing gdb..."
+        case "$PACKAGE_MANAGER" in
+        pacman) sudo pacman -S --noconfirm --needed gdb ;;
+        apt) sudo apt-get install -y gdb ;;
+        dnf) sudo dnf install -y gdb ;;
+        zypper) sudo zypper install -y gdb ;;
+        brew) brew install gdb || log_warning "gdb needs manual codesigning on macOS: https://sourceware.org/gdb/wiki/PermissionsDarwin" ;;
+        esac
+    fi
+
+    # bear: generates compile_commands.json from a Makefile build so clangd
+    # gets real per-file flags/includes on multi-file projects instead of
+    # guessing. Run `bear -- make` in a project to (re)generate it.
+    if command_exists bear; then
+        log_success "bear already installed"
+    else
+        log_info "Installing bear (compile_commands.json generator)..."
+        case "$PACKAGE_MANAGER" in
+        pacman) sudo pacman -S --noconfirm --needed bear ;;
+        apt) sudo apt-get install -y bear ;;
+        dnf) sudo dnf install -y bear ;;
+        zypper) sudo zypper install -y bear ;;
+        brew) brew install bear ;;
+        *) log_warning "bear not available for this OS" ;;
+        esac
+    fi
+
+    log_success "C/C++ toolchain installation complete"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Install Zsh
 # ─────────────────────────────────────────────────────────────────────────────
 install_zsh() {
@@ -610,6 +679,7 @@ print_success_message() {
     echo ""
     echo -e "  ${CYAN}What was installed:${NC}"
     echo -e "    - Zsh + Oh-My-Zsh with plugins"
+    echo -e "    - C/C++ toolchain (gcc/g++, make, gdb, bear)"
     echo -e "    - Neovim with lazy.nvim plugin manager"
     echo -e "    - Kitty terminal emulator"
     echo -e "    - Modern CLI tools (eza, bat, fd, fzf, ripgrep)"
@@ -668,6 +738,7 @@ main() {
 
     update_system
     install_core_deps
+    install_cpp_toolchain
     install_zsh
     install_oh_my_zsh
     install_zsh_plugins

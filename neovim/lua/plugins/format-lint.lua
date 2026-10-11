@@ -27,6 +27,27 @@ return {
                 python = { "ruff", "black" },
                 blade = { "blade-formatter" },
             },
+            formatters = {
+                ["clang-format"] = {
+                    -- clang-format's own default (no .clang-format found) is
+                    -- the LLVM style, which is 2-space indent — that silently
+                    -- overwrote 4-space code on every save. Only fall back to
+                    -- a 4-space style (matching options.lua's tabstop/
+                    -- shiftwidth) when no project .clang-format exists;
+                    -- a project-level .clang-format still wins as-is.
+                    args = function(self, ctx)
+                        local has_project_style = #vim.fs.find(".clang-format", { path = ctx.dirname, upward = true }) > 0
+                        if has_project_style then
+                            return { "-assume-filename", "$FILENAME" }
+                        end
+                        return {
+                            "-assume-filename",
+                            "$FILENAME",
+                            "--style={BasedOnStyle: LLVM, IndentWidth: 4, TabWidth: 4, UseTab: Never}",
+                        }
+                    end,
+                },
+            },
         },
         config = function(_, opts)
             require("conform").setup(opts)

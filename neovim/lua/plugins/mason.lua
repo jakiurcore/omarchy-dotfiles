@@ -29,7 +29,12 @@ return {
                 "yamlls",
                 "dockerls",
                 "intelephense",
+                "kotlin_language_server",
             },
+            -- jdtls is started manually by nvim-jdtls (lua/plugins/jdtls.lua) with a
+            -- pinned JDK 21+ runtime; mason-lspconfig's default config launches it via
+            -- whatever `java` is first on PATH, which crashes on older JDKs.
+            automatic_enable = { exclude = { "jdtls" } },
         },
         config = function(_, opts)
             require("mason-lspconfig").setup(opts)

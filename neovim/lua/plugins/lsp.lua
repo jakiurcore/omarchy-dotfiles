@@ -69,7 +69,12 @@ return {
             rust_analyzer = {},
             clangd = {
                 cmd = { "clangd", "--background-index", "--clang-tidy" },
-                root_dir = require("lspconfig.util").root_pattern("Makefile", ".git"),
+                -- root_markers (not the old lspconfig-style root_dir function)
+                -- is what the native vim.lsp.config API expects; compile_commands.json
+                -- (e.g. generated via `bear -- make`) lets clangd resolve real
+                -- per-file flags/includes on multi-file Makefile projects instead
+                -- of guessing from fallbackFlags below.
+                root_markers = { "compile_commands.json", ".clangd", "Makefile", ".git" },
                 init_options = {
                     fallbackFlags = { "-Iinclude" },
                 },
@@ -95,6 +100,21 @@ return {
                 },
             },
             bashls = {},
+            kotlin_language_server = {
+                -- lspconfig's default init_options.storagePath is vim.fs.root(...),
+                -- which is nil outside a gradle/maven project; a nil field makes
+                -- init_options serialize as a JSON array instead of an object and
+                -- crashes the server's config parser (Expected BEGIN_OBJECT but was
+                -- BEGIN_ARRAY). Always set a storagePath so it's never empty.
+                init_options = {
+                    storagePath = vim.fn.stdpath("cache") .. "/kotlin-language-server",
+                },
+                settings = {
+                    kotlin = {
+                        compiler = { jvm = { target = "21" } },
+                    },
+                },
+            },
         }
 
         for name, opts in pairs(servers) do

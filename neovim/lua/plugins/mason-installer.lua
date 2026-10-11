@@ -8,6 +8,11 @@ return {
             -- LSP-like tools (you can add more here too if you want)
             -- NOTE: LSP servers are handled by mason-lspconfig ensure_installed already.
 
+            -- Java (jdtls is started manually via nvim-jdtls, not mason-lspconfig)
+            "jdtls",
+            "java-debug-adapter",
+            "java-test",
+
             -- Formatters / Linters
             -- JS/TS/HTML/CSS/JSON
             "prettierd",
